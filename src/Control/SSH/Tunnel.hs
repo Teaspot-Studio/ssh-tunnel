@@ -23,7 +23,6 @@ import Network.HTTP.Client as C
 import Turtle
 import Prelude hiding (FilePath)
 
-import qualified Control.Foldl as L
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 
