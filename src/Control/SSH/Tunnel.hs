@@ -144,7 +144,7 @@ closeSshTunnel = liftIO . flip putMVar () . sshTunnelCloseMutex
 
 -- | Write down info about tunnel into file to be able to close it from other
 -- haskell program.
-saveSshTunnel :: MonadIO m => FilePath -> SshTunnel -> m ()
+saveSshTunnel :: (MonadFail m, MonadIO m) => FilePath -> SshTunnel -> m ()
 saveSshTunnel path SshTunnel{..} = do
   path' <- case Turtle.toText path of
     Left e -> fail $ "saveSshTunnel: cannot convert path to Text " ++ show e
