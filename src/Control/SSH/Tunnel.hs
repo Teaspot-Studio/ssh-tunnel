@@ -1,6 +1,7 @@
 {-# LANGUAGE RecordWildCards #-}
 module Control.SSH.Tunnel(
     SshTunnelConfig(..)
+  , RemotePort (..)
   , openSshTunnel
   , addFingerprints
   , SshTunnel
@@ -26,11 +27,21 @@ import Prelude hiding (FilePath)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 
+-- | RemotePort definition
+data RemotePort
+  = TcpPort Int -- ^ Network number
+  | UnixSocket Text -- ^ Socket path
+  deriving (Generic, Show, Read)
+
+showRemotePort :: RemotePort -> Text
+showRemotePort (TcpPort x) = "127.0.0.1:" <> showl x
+showRemotePort (UnixSocket x) = x
+
 -- | Configuration of SSH tunnel
 data SshTunnelConfig = SshTunnelConfig {
   sshTunnelKey        :: Text -- ^ Path to ssh pem file
 , sshTunnelPort       :: Int -- ^ Port that is used for local ssh proxy
-, sshTunnelRemotePort :: Int -- ^ Port that is used on remote machine for vpn manager
+, sshTunnelRemotePort :: RemotePort -- ^ Port that is used on remote machine for vpn manager
 , sshTunnelRemoteUser :: Text -- ^ Name of SSH user for tunneling
 , sshTunnelRemoteNode :: Text -- ^ Host of SSH tunnel
 , sshTunnelTempFolder :: Text -- ^ Place where we can place our temp files
@@ -93,7 +104,7 @@ openSshTunnel' cfg mngSettings = using $ do
       <> "-S \"" <> masterSocketName <> "\" "
       <> "-i \"" <> sshTunnelKey cfg <> "\" "
       <> "-L "
-      <> showl (sshTunnelPort cfg) <> ":127.0.0.1:" <> showl (sshTunnelRemotePort cfg) <> " "
+      <> showl (sshTunnelPort cfg) <> ":" <> showRemotePort (sshTunnelRemotePort cfg) <> " "
       <> sshTunnelRemoteUser cfg <> "@" <> sshTunnelRemoteNode cfg
 
 -- Send exit command over master socket
